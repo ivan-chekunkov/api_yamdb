@@ -4,7 +4,7 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -73,6 +73,7 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [AdminPermission, ]
     serializer_class = UserSerializer
     lookup_field = 'username'
+    pagination_class = PageNumberPagination
 
     def get_queryset(self):
         return User.objects.all()
@@ -141,6 +142,7 @@ class CategoryViewSet(viewsets.GenericViewSet,
 
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    pagination_class = LimitOffsetPagination
     lookup_field = 'slug'
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', ]

@@ -9,17 +9,17 @@ router_v1 = DefaultRouter()
 router_v1.register('users', UserViewSet, basename='users')
 
 router_v1.register(
-    'title',
+    'titles',
     TitleViewSet,
     basename='title',
 )
 router_v1.register(
-    'category',
+    'categories',
     CategoryViewSet,
     basename='category',
 )
 router_v1.register(
-    'genre',
+    'genres',
     GenreViewSet,
     basename='genre',
 )
