@@ -7,8 +7,6 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
-    'api',
-    'users',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -19,6 +17,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'api',
     'reviews',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -99,4 +98,3 @@ SIMPLE_JWT = {
 
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
-

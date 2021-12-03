@@ -1,10 +1,8 @@
 from rest_framework import serializers
 from users.models import User
 from rest_framework.validators import UniqueTogetherValidator
-from reviews.models import Category, Genre, Title, Rewiev, Comment
+from reviews.models import Category, Genre, Title, Review, Comment
 from rest_framework.relations import SlugRelatedField
-
-
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -56,8 +54,8 @@ class EmailSerializer(serializers.Serializer):
                 queryset=User.objects.all(),
                 fields=('username',),
                 message='Это имя пользователя уже используется'
-
-
+            )
+        ]
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -100,13 +98,12 @@ class ReviewSerializer(serializers.ModelSerializer):
     author = SlugRelatedField(slug_field='username', read_only=True)
     title = serializers.SlugRelatedField(slug_field='name', read_only=True)
 
-
     class Meta:
         fields = '__all__'
-        model = Rewiev
+        model = Review
         validators = [
             UniqueTogetherValidator(
-                queryset=Rewiev.objects.all(),
+                queryset=Review.objects.all(),
                 fields=('author', 'title'),
                 message='Отзыв уже существует'
 
@@ -114,10 +111,10 @@ class ReviewSerializer(serializers.ModelSerializer):
         ]
 
 
-
 class CodeSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField(required=True)
     username = serializers.CharField(required=True, max_length=150)
+
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
@@ -127,4 +124,3 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Comment
-
