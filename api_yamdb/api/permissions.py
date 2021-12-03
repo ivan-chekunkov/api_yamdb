@@ -6,8 +6,22 @@ from users.models import CHOICES
 class AdminPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        return bool(request.user.is_authenticated
-                    and (
-                        request.user.is_staff or request.user.role
-                        == 'ADMIN')
-                    )
+        user = request.user
+        return(
+            user.is_authenticated
+            and (user.role == 'admin' or user.is_superuser)
+        )
+
+
+class ModeratorPermission(permissions.BasePermission):
+
+    def has_permission(self, request, view):
+        user = request.user
+        return(
+            user.is_authenticated
+            and (
+                user.role == 'admin'
+                or user.role == 'moderator'
+                or user.is_superuser
+            )
+        )
