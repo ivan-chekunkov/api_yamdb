@@ -1,6 +1,7 @@
 from rest_framework import serializers
-
-from reviews.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title, Rewiev, Comment
+from rest_framework.relations import SlugRelatedField
+from rest_framework.validators import UniqueTogetherValidator
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -37,3 +38,31 @@ class TitleSerializer(BaseTitleSerializer):
 class TitleSerializerDeep(BaseTitleSerializer):
     category = CategorySerializer()
     genre = GenreSerializer(many=True)
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = SlugRelatedField(slug_field='username', read_only=True)
+    title = serializers.SlugRelatedField(slug_field='name', read_only=True)
+
+
+    class Meta:
+        fields = '__all__'
+        model = Rewiev
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Rewiev.objects.all(),
+                fields=('author', 'title'),
+                message='Отзыв уже существует'
+            )
+        ]
+
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username'
+    )
+
+    class Meta:
+        fields = '__all__'
+        model = Comment
