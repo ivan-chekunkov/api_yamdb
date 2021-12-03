@@ -8,7 +8,7 @@ from .serializers import (
     ReviewSerializer,
     CommentSerializer)
 from .filters import TitleFilter
-from reviews.models import Category, Genre, Title, Rewiev
+from reviews.models import Category, Genre, Title, Review
 from .permissions import IsAuthorOrReadOnly
 from rest_framework.pagination import LimitOffsetPagination
 from django.shortcuts import get_object_or_404
@@ -69,10 +69,10 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
 
     def get_queryset(self):
-        rewiev = get_object_or_404(Rewiev, pk=self.kwargs.get('rewiev_id'))
+        rewiev = get_object_or_404(Review, pk=self.kwargs.get('rewiev_id'))
         query_comments = rewiev.comments.all()
         return query_comments
 
     def perform_create(self, serializer):
-        rewiev = get_object_or_404(Rewiev, pk=self.kwargs.get('rewiev_id'))
+        rewiev = get_object_or_404(Review, pk=self.kwargs.get('rewiev_id'))
         serializer.save(author=self.request.user, rewiev=rewiev)
