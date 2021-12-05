@@ -2,23 +2,29 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import UniqueConstraint
 
-CHOICES = (
-    ('user', 'Аутентифицированный пользователь'),
-    ('moderator', 'Модератор'),
-    ('admin', 'Администратор'),
-)
+
+class UserRoles:
+    USER = 'user'
+    MODERATOR = 'moderator'
+    ADMIN = 'admin'
+    USER_ROLES = (
+        (USER, USER),
+        (MODERATOR, MODERATOR),
+        (ADMIN, ADMIN),
+    )
 
 
 class User(AbstractUser):
+
     email = models.EmailField(
         unique=True,
         blank=False,
     )
     role = models.CharField(
-        max_length=10,
-        choices=CHOICES,
-        default='user',
-        blank=False
+        max_length=100,
+        choices=UserRoles.USER_ROLES,
+        default=UserRoles.USER,
+        blank=False,
     )
     confirmation_code = models.CharField(
         max_length=50,

@@ -38,5 +38,4 @@ urlpatterns = [
     path('v1/', include(router_v1.urls)),
     path('v1/auth/signup/', views.send_code_confirmation),
     path('v1/auth/token/', views.get_user_token_auth),
-    path('v1/users/me', views.UserInfo),
 ]

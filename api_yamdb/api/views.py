@@ -3,7 +3,7 @@ from random import randint
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, status, viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -11,16 +11,18 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Review, Title
-from users.models import User
+
 
 from .filters import TitleFilter
-from .permissions import (AdminPermission, IsAuthorOrReadOnly,
-                          ModeratorPermission)
+from .permissions import AdminPermission, IsAuthorOrReadOnly
+
 from .serializers import (CategorySerializer, CodeSerializer,
                           CommentSerializer, EmailSerializer, GenreSerializer,
                           ReviewSerializer, TitleSerializer,
-                          TitleSerializerDeep, UserInfoSerializer,
-                          UserSerializer)
+                          TitleSerializerDeep, UserSerializer,
+                          UserCreateSerializer)
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 
 @api_view(['POST'])
@@ -31,16 +33,12 @@ def send_code_confirmation(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     email = serializer.data['email']
     username = serializer.data['username']
-    if username == 'me':
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
     confirmation_code = randint(10000, 99999)
-    user, created = User.objects.get_or_create(
+    User.objects.create(
         username=username,
         email=email,
         confirmation_code=confirmation_code,
     )
-    if not created:
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
     send_mail(
         'Токен доступа',
         f'Отправляем вам докен доступа: {confirmation_code}',
@@ -73,54 +71,40 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [AdminPermission, ]
     serializer_class = UserSerializer
     lookup_field = 'username'
+    pagination_class = LimitOffsetPagination
+    queryset = User.objects.all()
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username']
 
-    def get_queryset(self):
-        return User.objects.all()
+    def has_permission(self, request, view):
+        if self.action == 'patch':
+            return (IsAuthenticated(),)
+        return super().get_permissions()
 
-    def list(self, request, *args, **kwargs):
-        queryset = User.objects.all()
-        serializer = UserSerializer(queryset, many=True)
-        return Response(serializer.data)
+    def partial_update(self, request, *args, **kwargs):
+        username = kwargs['username']
+        user = get_object_or_404(User, username=username)
+        serializer = UserSerializer(
+            user, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def retrieve(self, request, *args, **kwargs):
-        queryset = User.objects.all()
-        user = get_object_or_404(queryset, username=self.kwargs['username'])
-        serializer = UserSerializer(user)
-        return Response(serializer.data)
-
-    def perform_create(self, serializer):
-        return super().perform_create(serializer)
-
-    def perform_update(self, serializer):
-        queryset = User.objects.all()
-        user = get_object_or_404(queryset, username=self.kwargs['username'])
-        if user != self.request.user.username:
-            return Response(serializer.data, status=status.HTTP_403_FORBIDDEN)
-        return super().perform_update(serializer)
-
-    def perform_destroy(self, instance):
-        queryset = User.objects.all()
-        user = get_object_or_404(queryset, username=self.kwargs['username'])
-        if user.is_superuser:
-            return Response(instance.data, status=status.HTTP_403_FORBIDDEN)
-        return super().perform_destroy(instance)
-
-
-class UserInfo(APIView):
-    permission_classes = [IsAuthenticated, ]
-
-    def get(self, request):
-        user = User.objects.all(username=request.user.username)
-        serializer = UserInfoSerializer(user)
-        return Response(serializer._data, status=status.HTTP_200_OK)
-
-    def patch(self, request):
-        user = User.objects.all(username=request.user.username)
-        serializer = UserInfoSerializer(user, data=request.data, partial=True)
-        if serializer.is_valid:
+    @action(
+        detail=False, methods=['get', 'patch'],
+        url_path='me', url_name='me',
+        permission_classes=(IsAuthenticated,)
+    )
+    def me(self, request):
+        serializer = UserCreateSerializer(request.user)
+        if request.method == "PATCH":
+            serializer = UserCreateSerializer(
+                request.user, data=request.data, partial=True
+            )
+            serializer.is_valid(raise_exception=True)
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TitleViewSet(ModelViewSet):
