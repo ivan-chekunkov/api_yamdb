@@ -3,23 +3,16 @@ from random import randint
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, status, viewsets
-
 from rest_framework.decorators import api_view, permission_classes, action
-
-
-
-from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
-
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Review, Title
 
-
 from .filters import TitleFilter
-from .permissions import AdminPermission, IsAuthorOrReadOnly
+from .permissions import AdminPermission, IsAuthorOrReadOnly, IsAdminOrReadOnly
 
 from .serializers import (CategorySerializer, CodeSerializer,
                           CommentSerializer, EmailSerializer, GenreSerializer,
@@ -97,7 +90,7 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(
-        detail=False, methods=['get', 'patch'],
+        detail=False, methods=['GET', 'PATCH'],
         url_path='me', url_name='me',
         permission_classes=(IsAuthenticated,)
     )
@@ -134,6 +127,7 @@ class CategoryViewSet(viewsets.GenericViewSet,
     lookup_field = 'slug'
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', ]
+    permission_classes = [IsAdminOrReadOnly, ]
 
 
 class GenreViewSet(viewsets.GenericViewSet,
@@ -145,6 +139,8 @@ class GenreViewSet(viewsets.GenericViewSet,
     lookup_field = 'slug'
     filter_backends = [filters.SearchFilter]
     search_fields = ['name', ]
+    pagination_class = LimitOffsetPagination
+    permission_classes = [IsAdminOrReadOnly, ]
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
