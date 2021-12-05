@@ -84,6 +84,11 @@ class EmailSerializer(serializers.Serializer):
         ]
 
 
+class CodeSerializer(serializers.Serializer):
+    confirmation_code = serializers.CharField(required=True)
+    username = serializers.CharField(required=True, max_length=150)
+
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         exclude = ['id']
@@ -135,11 +140,6 @@ class ReviewSerializer(serializers.ModelSerializer):
 
             )
         ]
-
-
-class CodeSerializer(serializers.Serializer):
-    confirmation_code = serializers.CharField(required=True)
-    username = serializers.CharField(required=True, max_length=150)
 
 
 class CommentSerializer(serializers.ModelSerializer):
