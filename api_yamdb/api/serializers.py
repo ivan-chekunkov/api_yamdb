@@ -33,7 +33,7 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
 
-class UserCreateSerializer(serializers.ModelSerializer):
+class UserInfoSerializer(serializers.ModelSerializer):
     username = serializers.CharField(read_only=True)
     email = serializers.EmailField(read_only=True)
     role = serializers.CharField(read_only=True)
@@ -130,13 +130,14 @@ class TitleSerializerDeep(BaseTitleSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(slug_field='username', read_only=True)
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True)
     title = serializers.SlugRelatedField(slug_field='name', read_only=True)
 
     class Meta:
         fields = '__all__'
         model = Review
-    
+
     def validate(self, data):
         request = self.context['request']
         title_id = self.context.get('view').kwargs.get('title_id')
@@ -160,7 +161,7 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only=True, slug_field='username'
     )
     review = serializers.SlugRelatedField(
-        read_only=True, slug_field='text',
+        read_only=True, slug_field='text'
     )
 
     class Meta:
