@@ -8,4 +8,3 @@ def validate_year(val):
     if val > current_year:
         raise ValidationError(
             'Год должен быть меньше или равен текущему')
-        

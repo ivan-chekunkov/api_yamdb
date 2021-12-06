@@ -78,7 +78,10 @@ class GenreTitle(models.Model):
 
 class Review(models.Model):
     text = models.TextField()
-    pub_date = models.DateTimeField('Дата публикации', auto_now_add=True, db_index=True)
+    pub_date = models.DateTimeField(
+        'Дата публикации',
+        auto_now_add=True,
+        db_index=True)
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='reviews')
     title = models.ForeignKey(
@@ -92,7 +95,12 @@ class Review(models.Model):
 
     class Meta:
         ordering = ['pub_date']
-        constraints = [UniqueConstraint(fields=['author', 'title'], name='review')]
+        constraints = [
+            UniqueConstraint(
+                fields=[
+                    'author',
+                    'title'],
+                name='review')]
 
     def __str__(self):
         return self.text[:15]
@@ -101,14 +109,11 @@ class Review(models.Model):
 class Comment(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='comments')
-    rewiev = models.ForeignKey(
+    review = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name='comments')
     text = models.TextField(max_length=250)
     pub_date = models.DateTimeField(
         'Дата добавления', auto_now_add=True, db_index=True)
-
-    class Meta:
-        ordering = ['-pub_date']
 
     def __str__(self):
         return self.text[:15]
