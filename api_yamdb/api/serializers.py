@@ -32,7 +32,7 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
 
-class UserCreateSerializer(serializers.ModelSerializer):
+class UserInfoSerializer(serializers.ModelSerializer):
     username = serializers.CharField(read_only=True)
     email = serializers.EmailField(read_only=True)
     role = serializers.CharField(read_only=True)

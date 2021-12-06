@@ -17,7 +17,7 @@ from .serializers import (CategorySerializer, CodeSerializer,
                           CommentSerializer, EmailSerializer, GenreSerializer,
                           ReviewSerializer, TitleSerializer,
                           TitleSerializerDeep, UserSerializer,
-                          UserCreateSerializer)
+                          UserInfoSerializer)
 from django.contrib.auth import get_user_model
 from django.db.models import Avg
 
@@ -101,9 +101,9 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def me(self, request):
-        serializer = UserCreateSerializer(request.user)
+        serializer = UserInfoSerializer(request.user)
         if request.method == "PATCH":
-            serializer = UserCreateSerializer(
+            serializer = UserInfoSerializer(
                 request.user, data=request.data, partial=True
             )
             serializer.is_valid(raise_exception=True)
