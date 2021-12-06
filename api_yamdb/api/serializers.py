@@ -126,6 +126,7 @@ class TitleSerializer(BaseTitleSerializer):
 class TitleSerializerDeep(BaseTitleSerializer):
     category = CategorySerializer()
     genre = GenreSerializer(many=True)
+    rating = serializers.IntegerField(read_only=True)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
