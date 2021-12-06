@@ -3,6 +3,9 @@ from rest_framework.validators import UniqueTogetherValidator
 from reviews.models import Category, Genre, Title, Review, Comment
 from rest_framework.relations import SlugRelatedField
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
+
 
 User = get_user_model()
 
@@ -126,25 +129,37 @@ class TitleSerializerDeep(BaseTitleSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = SlugRelatedField(slug_field='username', read_only=True)
+    author = serializers.SlugRelatedField(slug_field='username', read_only=True)
     title = serializers.SlugRelatedField(slug_field='name', read_only=True)
 
     class Meta:
         fields = '__all__'
         model = Review
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=('author', 'title'),
-                message='Отзыв уже существует'
+    
+    def validate(self, data):
+        request = self.context['request']
+        title_id = self.context.get('view').kwargs.get('title_id')
+        user = request.user
+        title = get_object_or_404(Title, pk=title_id)
+        if (
+            request.method == 'POST'
+            and Review.objects.filter(title=title, author=user).exists()
+        ):
+            raise ValidationError('Отзыв уже существует')
+        return data
 
-            )
-        ]
+    def validate_score(self, value):
+        if 0 > value > 10:
+            raise ValidationError('Оценка от 0 до 10')
+        return value
 
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
+    )
+    review = serializers.SlugRelatedField(
+        read_only=True, slug_field='text',
     )
 
     class Meta:
