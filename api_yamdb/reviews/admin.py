@@ -7,3 +7,4 @@ admin.site.register(Category)
 admin.site.register(Genre)
 admin.site.register(GenreTitle)
 admin.site.register(Title)
++
