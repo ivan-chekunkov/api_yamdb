@@ -1,4 +1,4 @@
-from random import randint
+import uuid
 
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -6,7 +6,7 @@ from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -14,9 +14,12 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
+from api_yamdb.settings import ADMIN_EMAIL
+
 from reviews.models import Category, Genre, Review, Title
 
 from .filters import TitleFilter
+from .mixins import CreateOrListViewSet
 from .permissions import (AdminPermission, AuthorOrAdminOrModeratorReadOnly,
                           IsAdminOrReadOnly)
 from .serializers import (CategorySerializer, CodeSerializer,
@@ -28,20 +31,14 @@ from .serializers import (CategorySerializer, CodeSerializer,
 User = get_user_model()
 
 
-class CreateOrListViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
-                          viewsets.GenericViewSet, mixins.DestroyModelMixin):
-    pass
-
-
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def send_code_confirmation(request):
     serializer = EmailSerializer(data=request.data)
-    if not serializer.is_valid(raise_exception=True):
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    email = serializer.data['email']
-    username = serializer.data['username']
-    confirmation_code = randint(10000, 99999)
+    serializer.is_valid(raise_exception=True)
+    email = serializer.validated_data['email']
+    username = serializer.validated_data['username']
+    confirmation_code = uuid.uuid3(uuid.NAMESPACE_DNS, email)
     User.objects.create(
         username=username,
         email=email,
@@ -50,7 +47,7 @@ def send_code_confirmation(request):
     send_mail(
         'Токен доступа',
         f'Отправляем вам докен доступа: {confirmation_code}',
-        'admin@admin.ru',
+        ADMIN_EMAIL,
         [email],
         fail_silently=False,
     )
@@ -62,8 +59,8 @@ def send_code_confirmation(request):
 def get_user_token_auth(request):
     serializer = CodeSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    confirmation_code = serializer.data['confirmation_code']
-    username = serializer.data['username']
+    confirmation_code = serializer.validated_data['confirmation_code']
+    username = serializer.validated_data['username']
     user = get_object_or_404(User, username=username)
     if confirmation_code != user.confirmation_code:
         return Response(
@@ -84,11 +81,6 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ['username']
 
-    def has_permission(self, request, view):
-        if self.action == 'patch':
-            return (IsAuthenticated(),)
-        return super().get_permissions()
-
     def partial_update(self, request, *args, **kwargs):
         username = kwargs['username']
         user = get_object_or_404(User, username=username)
@@ -106,7 +98,7 @@ class UserViewSet(viewsets.ModelViewSet):
     )
     def me(self, request):
         serializer = UserInfoSerializer(request.user)
-        if request.method == "PATCH":
+        if request.method == 'PATCH':
             serializer = UserInfoSerializer(
                 request.user, data=request.data, partial=True
             )

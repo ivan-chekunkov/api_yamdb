@@ -12,6 +12,15 @@ class AdminPermission(permissions.BasePermission):
             and (user.is_admin or user.is_superuser)
         )
 
+    def has_object_permission(self, request, view, obj):
+        user = request.user
+        if request.method == 'PATCH':
+            return user.is_authenticated
+        return(
+            user.is_authenticated
+            and (user.is_admin or user.is_superuser)
+        )
+
 
 class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
