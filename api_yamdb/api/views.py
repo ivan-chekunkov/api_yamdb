@@ -1,25 +1,29 @@
 from random import randint
+
+from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework import filters, mixins, status, viewsets
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
+
 from reviews.models import Category, Genre, Review, Title
-from django_filters.rest_framework import DjangoFilterBackend
+
 from .filters import TitleFilter
 from .permissions import (AdminPermission, AuthorOrAdminOrModeratorReadOnly,
                           IsAdminOrReadOnly)
 from .serializers import (CategorySerializer, CodeSerializer,
                           CommentSerializer, EmailSerializer, GenreSerializer,
                           ReviewSerializer, TitleSerializer,
-                          TitleSerializerDeep, UserSerializer,
-                          UserInfoSerializer)
-from django.contrib.auth import get_user_model
-from django.db.models import Avg
+                          TitleSerializerDeep, UserInfoSerializer,
+                          UserSerializer)
 
 User = get_user_model()
 

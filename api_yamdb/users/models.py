@@ -53,3 +53,15 @@ class User(AbstractUser):
             UniqueConstraint(fields=['email', ], name='email'),
             UniqueConstraint(fields=['username', ], name='username')
         ]
+
+    @property
+    def is_admin(self):
+        return self.role == UserRoles.ADMIN
+
+    @property
+    def is_moderator(self):
+        return self.role == UserRoles.MODERATOR
+
+    @property
+    def is_user(self):
+        return self.role == UserRoles.USER
