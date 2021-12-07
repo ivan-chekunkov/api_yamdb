@@ -6,7 +6,7 @@ from users.models import User
 
 from .validators import validate_year
 
-
++
 class Category(models.Model):
     name = models.CharField(
         verbose_name='Наименование',
@@ -62,7 +62,7 @@ class Title(models.Model):
         null=True
     )
 
-
++
 class GenreTitle(models.Model):
     title = models.ForeignKey(
         Title,
@@ -90,12 +90,14 @@ class Review(models.Model):
         Title, on_delete=models.CASCADE,
         related_name="reviews", blank=True, null=True
     )
+    +
     score = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), MaxValueValidator(10)],
         verbose_name='Рейтинг'
     )
 
     class Meta:
+        +
         ordering = ['pub_date']
         constraints = [
             UniqueConstraint(
