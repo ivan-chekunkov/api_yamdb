@@ -46,8 +46,9 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField(
         Genre,
-        through='GenreTitle',
-        through_fields=('title', 'genre'),
+        blank=True,
+        null=True,
+        related_name='titles',
     )
     category = models.ForeignKey(
         Category,
@@ -58,21 +59,6 @@ class Title(models.Model):
     )
     description = models.TextField(
         verbose_name='Описание',
-        blank=True,
-        null=True
-    )
-
-
-class GenreTitle(models.Model):
-    title = models.ForeignKey(
-        Title,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
-    )
-    genre = models.ForeignKey(
-        Genre,
-        on_delete=models.SET_NULL,
         blank=True,
         null=True
     )
