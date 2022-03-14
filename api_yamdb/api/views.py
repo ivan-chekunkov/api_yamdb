@@ -120,7 +120,6 @@ class TitleViewSet(ModelViewSet):
 
 
 class CategoryViewSet(CreateOrListViewSet):
-
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     pagination_class = LimitOffsetPagination
