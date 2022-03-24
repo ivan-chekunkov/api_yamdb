@@ -54,7 +54,6 @@ class Title(models.Model):
     genre = models.ManyToManyField(
         Genre,
         blank=True,
-        null=True,
         related_name='titles',
         verbose_name='Жанр'
     )
@@ -110,7 +109,7 @@ class Review(models.Model):
 
     class Meta:
         verbose_name = 'Отзыв',
-        verbose_name_plural = 'Отзывы',
+        verbose_name_plural = 'Отзывы'
         ordering = ['pub_date']
         constraints = [
             UniqueConstraint(
@@ -146,7 +145,7 @@ class Comment(models.Model):
 
     class Meta:
         verbose_name = 'Комментарий',
-        verbose_name_plural = 'Комментарии',
+        verbose_name_plural = 'Комментарии'
 
     def __str__(self):
         return self.text[:15]
